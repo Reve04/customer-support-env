@@ -1,0 +1,44 @@
+name: customer-support-triage
+version: "1.0"
+description: >
+  A real-world customer support triage environment where an AI agent
+  reads support tickets and must classify priority, route to the correct
+  department, and draft helpful responses.
+author: James
+tasks:
+  - name: task1
+    difficulty: easy
+    description: Classify ticket priority as low, medium, or high.
+  - name: task2
+    difficulty: medium
+    description: Classify priority and route to billing, technical, or general.
+  - name: task3
+    difficulty: hard
+    description: Classify priority, route to department, and write a draft response.
+observation_space:
+  ticket_id: string
+  subject: string
+  body: string
+  customer_tier: string
+  account_age_days: integer
+  task_name: string
+action_space:
+  priority: "one of: low, medium, high"
+  department: "one of: billing, technical, general (optional for task1)"
+  draft_response: "string (required for task3)"
+reward:
+  min: 0.0
+  max: 1.0
+  type: continuous
+  partial_credit: true
+endpoints:
+  reset: POST /reset
+  step: POST /step
+  state: GET /state
+  tasks: GET /tasks
+  grader: GET /grader
+  baseline: GET /baseline
+baseline_scores:
+  task1: 1.0
+  task2: 1.0
+  task3: 0.78
