@@ -10,7 +10,14 @@ envs = {
     "task2": CustomerSupportEnv(task_name="task2"),
     "task3": CustomerSupportEnv(task_name="task3"),
 }
-
+@app.get("/")
+def root():
+    return {
+        "name": "Customer Support Triage Environment",
+        "version": "1.0",
+        "status": "running",
+        "endpoints": ["/reset", "/step", "/state", "/tasks", "/grader", "/baseline"]
+    }
 @app.post("/reset")
 def reset(task_name: str = "task1"):
     env = envs.get(task_name)
