@@ -99,6 +99,573 @@ TICKETS = [
         "department": "technical",
         "keywords": ["sync", "devices", "data", "reinstall"]
     }
+,
+    {
+        "ticket_id": "T011",
+        "subject": "Student discount application",
+        "body": "Here is my university ID, can I get the discount?",
+        "customer_tier": "free",
+        "account_age_days": 143,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "student",
+            "discount",
+            "id"
+        ]
+    },
+    {
+        "ticket_id": "T012",
+        "subject": "Refund request",
+        "body": "I forgot to cancel, please refund this month.",
+        "customer_tier": "enterprise",
+        "account_age_days": 583,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "refund",
+            "cancel",
+            "month"
+        ]
+    },
+    {
+        "ticket_id": "T013",
+        "subject": "Refund request",
+        "body": "I forgot to cancel, please refund this month.",
+        "customer_tier": "free",
+        "account_age_days": 547,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "refund",
+            "cancel",
+            "month"
+        ]
+    },
+    {
+        "ticket_id": "T014",
+        "subject": "Downgrade my account",
+        "body": "I want to move from Pro to Free layer.",
+        "customer_tier": "enterprise",
+        "account_age_days": 250,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "downgrade",
+            "pro",
+            "free"
+        ]
+    },
+    {
+        "ticket_id": "T015",
+        "subject": "Spam from your platform",
+        "body": "Someone is sending me spam messages through your app.",
+        "customer_tier": "pro",
+        "account_age_days": 47,
+        "priority": "high",
+        "department": "general",
+        "keywords": [
+            "spam",
+            "abuse",
+            "report"
+        ]
+    },
+    {
+        "ticket_id": "T016",
+        "subject": "Invoice missing VAT",
+        "body": "My company needs an invoice with our VAT number.",
+        "customer_tier": "enterprise",
+        "account_age_days": 878,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "invoice",
+            "vat",
+            "tax"
+        ]
+    },
+    {
+        "ticket_id": "T017",
+        "subject": "Feedback on new UI",
+        "body": "The new layout is very confusing.",
+        "customer_tier": "pro",
+        "account_age_days": 858,
+        "priority": "low",
+        "department": "general",
+        "keywords": [
+            "feedback",
+            "ui",
+            "layout"
+        ]
+    },
+    {
+        "ticket_id": "T018",
+        "subject": "Update payment method",
+        "body": "Where do I go to change my credit card?",
+        "customer_tier": "pro",
+        "account_age_days": 33,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "payment",
+            "card",
+            "update"
+        ]
+    },
+    {
+        "ticket_id": "T019",
+        "subject": "Export to CSV failing",
+        "body": "I get a 500 error when I try to export my report.",
+        "customer_tier": "enterprise",
+        "account_age_days": 324,
+        "priority": "medium",
+        "department": "technical",
+        "keywords": [
+            "export",
+            "csv",
+            "error",
+            "500"
+        ]
+    },
+    {
+        "ticket_id": "T020",
+        "subject": "Refund request",
+        "body": "I forgot to cancel, please refund this month.",
+        "customer_tier": "enterprise",
+        "account_age_days": 222,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "refund",
+            "cancel",
+            "month"
+        ]
+    },
+    {
+        "ticket_id": "T021",
+        "subject": "Receipt for accounting",
+        "body": "Need a copy of all receipts for last year.",
+        "customer_tier": "free",
+        "account_age_days": 952,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "receipt",
+            "accounting",
+            "year"
+        ]
+    },
+    {
+        "ticket_id": "T022",
+        "subject": "Enterprise sales inquiry",
+        "body": "We have 10,000 employees and want a demo.",
+        "customer_tier": "free",
+        "account_age_days": 956,
+        "priority": "medium",
+        "department": "general",
+        "keywords": [
+            "enterprise",
+            "sales",
+            "demo"
+        ]
+    },
+    {
+        "ticket_id": "T023",
+        "subject": "Spam from your platform",
+        "body": "Someone is sending me spam messages through your app.",
+        "customer_tier": "free",
+        "account_age_days": 950,
+        "priority": "high",
+        "department": "general",
+        "keywords": [
+            "spam",
+            "abuse",
+            "report"
+        ]
+    },
+    {
+        "ticket_id": "T024",
+        "subject": "Change billing cycle",
+        "body": "Can we switch from monthly to annual billing?",
+        "customer_tier": "free",
+        "account_age_days": 804,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "billing",
+            "cycle",
+            "annual"
+        ]
+    },
+    {
+        "ticket_id": "T025",
+        "subject": "Webhook delivery failed",
+        "body": "Missing notifications since yesterday.",
+        "customer_tier": "enterprise",
+        "account_age_days": 527,
+        "priority": "high",
+        "department": "technical",
+        "keywords": [
+            "webhook",
+            "delivery",
+            "notification"
+        ]
+    },
+    {
+        "ticket_id": "T026",
+        "subject": "API rate limit error",
+        "body": "Hitting the limit even on enterprise tier.",
+        "customer_tier": "enterprise",
+        "account_age_days": 738,
+        "priority": "high",
+        "department": "technical",
+        "keywords": [
+            "api",
+            "limit",
+            "rate"
+        ]
+    },
+    {
+        "ticket_id": "T027",
+        "subject": "App crashes on iOS",
+        "body": "Force closing immediately after the new update.",
+        "customer_tier": "enterprise",
+        "account_age_days": 465,
+        "priority": "high",
+        "department": "technical",
+        "keywords": [
+            "app",
+            "crash",
+            "ios",
+            "update"
+        ]
+    },
+    {
+        "ticket_id": "T028",
+        "subject": "App crashes on iOS",
+        "body": "Force closing immediately after the new update.",
+        "customer_tier": "pro",
+        "account_age_days": 133,
+        "priority": "high",
+        "department": "technical",
+        "keywords": [
+            "app",
+            "crash",
+            "ios",
+            "update"
+        ]
+    },
+    {
+        "ticket_id": "T029",
+        "subject": "Webhook delivery failed",
+        "body": "Missing notifications since yesterday.",
+        "customer_tier": "pro",
+        "account_age_days": 97,
+        "priority": "high",
+        "department": "technical",
+        "keywords": [
+            "webhook",
+            "delivery",
+            "notification"
+        ]
+    },
+    {
+        "ticket_id": "T030",
+        "subject": "Coupon code not working",
+        "body": "Applied the promo code but it still charged full price.",
+        "customer_tier": "enterprise",
+        "account_age_days": 48,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "coupon",
+            "promo",
+            "price"
+        ]
+    },
+    {
+        "ticket_id": "T031",
+        "subject": "Update payment method",
+        "body": "Where do I go to change my credit card?",
+        "customer_tier": "pro",
+        "account_age_days": 520,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "payment",
+            "card",
+            "update"
+        ]
+    },
+    {
+        "ticket_id": "T032",
+        "subject": "Delete my account",
+        "body": "I no longer wish to use the service, please delete everything.",
+        "customer_tier": "enterprise",
+        "account_age_days": 468,
+        "priority": "medium",
+        "department": "general",
+        "keywords": [
+            "delete",
+            "account",
+            "remove"
+        ]
+    },
+    {
+        "ticket_id": "T033",
+        "subject": "Student discount application",
+        "body": "Here is my university ID, can I get the discount?",
+        "customer_tier": "enterprise",
+        "account_age_days": 704,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "student",
+            "discount",
+            "id"
+        ]
+    },
+    {
+        "ticket_id": "T034",
+        "subject": "Receipt for accounting",
+        "body": "Need a copy of all receipts for last year.",
+        "customer_tier": "free",
+        "account_age_days": 524,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "receipt",
+            "accounting",
+            "year"
+        ]
+    },
+    {
+        "ticket_id": "T035",
+        "subject": "How do I add a team member?",
+        "body": "Looking for the user management screen.",
+        "customer_tier": "pro",
+        "account_age_days": 746,
+        "priority": "low",
+        "department": "general",
+        "keywords": [
+            "team",
+            "member",
+            "management"
+        ]
+    },
+    {
+        "ticket_id": "T036",
+        "subject": "2FA setup not sending SMS",
+        "body": "I am not receiving the text message to set up 2FA.",
+        "customer_tier": "pro",
+        "account_age_days": 523,
+        "priority": "medium",
+        "department": "technical",
+        "keywords": [
+            "2fa",
+            "sms",
+            "text",
+            "auth"
+        ]
+    },
+    {
+        "ticket_id": "T037",
+        "subject": "Student discount application",
+        "body": "Here is my university ID, can I get the discount?",
+        "customer_tier": "pro",
+        "account_age_days": 499,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "student",
+            "discount",
+            "id"
+        ]
+    },
+    {
+        "ticket_id": "T038",
+        "subject": "Coupon code not working",
+        "body": "Applied the promo code but it still charged full price.",
+        "customer_tier": "enterprise",
+        "account_age_days": 283,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "coupon",
+            "promo",
+            "price"
+        ]
+    },
+    {
+        "ticket_id": "T039",
+        "subject": "Where are the docs?",
+        "body": "I can't find the documentation for the webhooks.",
+        "customer_tier": "free",
+        "account_age_days": 503,
+        "priority": "low",
+        "department": "general",
+        "keywords": [
+            "docs",
+            "documentation",
+            "webhooks"
+        ]
+    },
+    {
+        "ticket_id": "T040",
+        "subject": "Coupon code not working",
+        "body": "Applied the promo code but it still charged full price.",
+        "customer_tier": "enterprise",
+        "account_age_days": 2,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "coupon",
+            "promo",
+            "price"
+        ]
+    },
+    {
+        "ticket_id": "T041",
+        "subject": "Double charge on card",
+        "body": "I see two identical charges on my statement.",
+        "customer_tier": "enterprise",
+        "account_age_days": 56,
+        "priority": "high",
+        "department": "billing",
+        "keywords": [
+            "charge",
+            "double",
+            "statement"
+        ]
+    },
+    {
+        "ticket_id": "T042",
+        "subject": "Enterprise sales inquiry",
+        "body": "We have 10,000 employees and want a demo.",
+        "customer_tier": "pro",
+        "account_age_days": 659,
+        "priority": "medium",
+        "department": "general",
+        "keywords": [
+            "enterprise",
+            "sales",
+            "demo"
+        ]
+    },
+    {
+        "ticket_id": "T043",
+        "subject": "Feedback on new UI",
+        "body": "The new layout is very confusing.",
+        "customer_tier": "free",
+        "account_age_days": 114,
+        "priority": "low",
+        "department": "general",
+        "keywords": [
+            "feedback",
+            "ui",
+            "layout"
+        ]
+    },
+    {
+        "ticket_id": "T044",
+        "subject": "Data not syncing",
+        "body": "Desktop client won't sync with mobile app.",
+        "customer_tier": "free",
+        "account_age_days": 889,
+        "priority": "medium",
+        "department": "technical",
+        "keywords": [
+            "sync",
+            "desktop",
+            "mobile"
+        ]
+    },
+    {
+        "ticket_id": "T045",
+        "subject": "How do I add a team member?",
+        "body": "Looking for the user management screen.",
+        "customer_tier": "free",
+        "account_age_days": 758,
+        "priority": "low",
+        "department": "general",
+        "keywords": [
+            "team",
+            "member",
+            "management"
+        ]
+    },
+    {
+        "ticket_id": "T046",
+        "subject": "Export to CSV failing",
+        "body": "I get a 500 error when I try to export my report.",
+        "customer_tier": "free",
+        "account_age_days": 854,
+        "priority": "medium",
+        "department": "technical",
+        "keywords": [
+            "export",
+            "csv",
+            "error",
+            "500"
+        ]
+    },
+    {
+        "ticket_id": "T047",
+        "subject": "Refund request",
+        "body": "I forgot to cancel, please refund this month.",
+        "customer_tier": "enterprise",
+        "account_age_days": 341,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "refund",
+            "cancel",
+            "month"
+        ]
+    },
+    {
+        "ticket_id": "T048",
+        "subject": "Coupon code not working",
+        "body": "Applied the promo code but it still charged full price.",
+        "customer_tier": "enterprise",
+        "account_age_days": 49,
+        "priority": "medium",
+        "department": "billing",
+        "keywords": [
+            "coupon",
+            "promo",
+            "price"
+        ]
+    },
+    {
+        "ticket_id": "T049",
+        "subject": "Export to CSV failing",
+        "body": "I get a 500 error when I try to export my report.",
+        "customer_tier": "free",
+        "account_age_days": 694,
+        "priority": "medium",
+        "department": "technical",
+        "keywords": [
+            "export",
+            "csv",
+            "error",
+            "500"
+        ]
+    },
+    {
+        "ticket_id": "T050",
+        "subject": "Receipt for accounting",
+        "body": "Need a copy of all receipts for last year.",
+        "customer_tier": "enterprise",
+        "account_age_days": 612,
+        "priority": "low",
+        "department": "billing",
+        "keywords": [
+            "receipt",
+            "accounting",
+            "year"
+        ]
+    }
 ]
 
 TASKS = {

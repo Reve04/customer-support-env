@@ -7,12 +7,15 @@ class CustomerSupportEnv:
     def __init__(self, task_name="task1"):
         self.task_name = task_name
         self.current_ticket = None
+        self.queue = []
         self.done = False
         self.step_count = 0
-        self.max_steps = 10
+        self.max_steps = 5
 
     def reset(self):
-        self.current_ticket = random.choice(TICKETS)
+        # Sample 5 unique tickets for the episode queue
+        self.queue = random.sample(TICKETS, min(self.max_steps, len(TICKETS)))
+        self.current_ticket = self.queue.pop(0)
         self.done = False
         self.step_count = 0
         return self._make_observation()
@@ -28,8 +31,10 @@ class CustomerSupportEnv:
         score, feedback = self._grade(action)
         reward = Reward(score=score, max_score=1.0, feedback=feedback)
 
-        self.done = True
-        self.current_ticket = random.choice(TICKETS)
+        if len(self.queue) == 0:
+            self.done = True
+        else:
+            self.current_ticket = self.queue.pop(0)
 
         return self._make_observation(), reward, self.done, {}
 
@@ -37,6 +42,7 @@ class CustomerSupportEnv:
         return {
             "task_name": self.task_name,
             "step_count": self.step_count,
+            "queue_size": len(self.queue),
             "done": self.done,
             "current_ticket_id": self.current_ticket["ticket_id"] if self.current_ticket else None
         }

@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from env.models import Action
 from env.environment import CustomerSupportEnv
@@ -10,6 +11,7 @@ envs = {
     "task2": CustomerSupportEnv(task_name="task2"),
     "task3": CustomerSupportEnv(task_name="task3"),
 }
+
 @app.get("/")
 def root():
     return {
@@ -18,6 +20,7 @@ def root():
         "status": "running",
         "endpoints": ["/reset", "/step", "/state", "/tasks", "/grader", "/baseline"]
     }
+
 @app.post("/reset")
 def reset(task_name: str = "task1"):
     env = envs.get(task_name)
@@ -83,3 +86,9 @@ def baseline():
                 scores.append(reward.score)
         results[task_name] = round(sum(scores) / len(scores), 2)
     return results
+
+def main():
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
+
+if __name__ == "__main__":
+    main()

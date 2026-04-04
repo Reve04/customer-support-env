@@ -58,12 +58,16 @@ def run_baseline():
 
     for task_name in ["task1", "task2", "task3"]:
         scores = []
-        for i in range(10):
+        for i in range(5):
             obs = call("POST", "/reset", params={"task_name": task_name})
-            action = simple_agent(obs, task_name)
-            result = call("POST", f"/step?task_name={task_name}", data=action)
-            score = result["reward"]["score"]
-            scores.append(score)
+            done = False
+            while not done:
+                action = simple_agent(obs, task_name)
+                result = call("POST", f"/step?task_name={task_name}", data=action)
+                score = result["reward"]["score"]
+                scores.append(score)
+                done = result["done"]
+                obs = result.get("observation")
 
         avg = round(sum(scores) / len(scores), 2)
         all_results[task_name] = avg
