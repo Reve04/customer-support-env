@@ -1,11 +1,16 @@
 import difflib
+import torch
+from sentence_transformers import SentenceTransformer, util
+
+# Load model globally so it only initializes once
+sem_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 def grade_task1(action, ticket):
     correct = ticket["priority"]
     guess = action.priority.lower().strip()
 
     if guess == correct:
-        return 1.0, "Correct priority."
+        return 0.99, "Correct priority."
 
     priority_order = ["low", "medium", "high"]
     if correct in priority_order and guess in priority_order:
@@ -13,7 +18,7 @@ def grade_task1(action, ticket):
         if diff == 1:
             return 0.5, f"Off by one. Expected {correct}, got {guess}."
 
-    return 0.0, f"Wrong priority. Expected {correct}, got {guess}."
+    return 0.01, f"Wrong priority. Expected {correct}, got {guess}."
 
 
 def grade_task2(action, ticket):
@@ -47,6 +52,11 @@ def grade_task2(action, ticket):
     else:
         feedback_parts.append(f"Department wrong. Expected {correct_dept}, got {guess_dept}.")
 
+    if score <= 0.0:
+        score = 0.01
+    elif score >= 1.0:
+        score = 0.99
+
     return round(score, 2), " ".join(feedback_parts)
 
 
@@ -72,16 +82,23 @@ def grade_task3(action, ticket):
         feedback += " Draft too short."
     else:
         ideal_response = get_ideal_response(ticket)
-        # Calculate Python's native text structural similarity
-        # Returns a float [0, 1] characterizing the similarity
-        sim = difflib.SequenceMatcher(None, draft.lower(), ideal_response.lower()).ratio()
+        
+        # Calculate semantic similarity using PyTorch based SentenceTransformers
+        emb_draft = sem_model.encode(draft.lower(), convert_to_tensor=True)
+        emb_ideal = sem_model.encode(ideal_response.lower(), convert_to_tensor=True)
+        
+        # Returns a float tensor, item() gets the Python float
+        sim = util.pytorch_cos_sim(emb_draft, emb_ideal).item()
         
         # Scale similarity to a max of 0.4
-        # Since difflib.ratio rarely hits 1.0 unless perfectly identical,
-        # anything above 0.5 is actually extremely good phrasing overlap.
-        scaled_sim = max(0.0, min(1.0, (sim - 0.1) / 0.6)) 
+        # Since cosine similarity can range from -1 to 1, but typical meaningful matches are 0.4+
+        scaled_sim = max(0.0, min(1.0, (sim - 0.4) / 0.5)) 
         draft_score = round(scaled_sim * 0.4, 2)
         feedback += f" Semantic match score: {round(scaled_sim*100)}%."
 
     total = round(base_score + draft_score, 2)
+    if total <= 0.0:
+        total = 0.01
+    elif total >= 1.0:
+        total = 0.99
     return total, feedback

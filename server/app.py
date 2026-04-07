@@ -1,5 +1,7 @@
+import os
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from env.models import Action
 from env.environment import CustomerSupportEnv
 from env.tasks import TASKS
@@ -12,14 +14,21 @@ envs = {
     "task3": CustomerSupportEnv(task_name="task3"),
 }
 
-@app.get("/")
+
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {
-        "name": "Customer Support Triage Environment",
-        "version": "1.0",
-        "status": "running",
-        "endpoints": ["/reset", "/step", "/state", "/tasks", "/grader", "/baseline"]
-    }
+    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    try:
+        with open(html_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), status_code=200)
+    except Exception as e:
+        return {
+            "name": "Customer Support Triage Environment",
+            "version": "1.0",
+            "status": "running",
+            "error": "Failed to load index.html UI.",
+            "endpoints": ["/reset", "/step", "/state", "/tasks", "/grader", "/baseline"]
+        }
 
 @app.post("/reset")
 def reset(task_name: str = "task1"):

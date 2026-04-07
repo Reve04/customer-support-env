@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Support Triage | OpenEnv</title>
+    <meta name="description" content="A real-world AI customer support triage environment for the Meta PyTorch Hackathon. Agents classify ticket priority, route departments, and draft responses.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #04010f;
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-hover: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.07);
+            --border-hover: rgba(139, 92, 246, 0.5);
+            --primary: #8b5cf6;
+            --primary-dark: #6d28d9;
+            --accent: #06b6d4;
+            --green: #10b981;
+            --orange: #f59e0b;
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --muted-light: #94a3b8;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── Background ── */
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .orb {
+            position: fixed; border-radius: 50%;
+            filter: blur(120px); z-index: 0; pointer-events: none;
+            animation: floatOrb 10s ease-in-out infinite alternate;
+        }
+        .orb-1 { width: 500px; height: 500px; background: rgba(109, 40, 217, 0.25); top: -150px; left: -150px; }
+        .orb-2 { width: 400px; height: 400px; background: rgba(6, 182, 212, 0.12); bottom: -100px; right: -100px; animation-delay: -5s; }
+        .orb-3 { width: 300px; height: 300px; background: rgba(139, 92, 246, 0.1); top: 40%; left: 60%; animation-delay: -2.5s; }
+
+        @keyframes floatOrb {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.08); }
+        }
+
+        /* ── Layout ── */
+        main {
+            position: relative; z-index: 1;
+            max-width: 860px; margin: 0 auto;
+            padding: 64px 24px 80px;
+        }
+
+        /* ── Hero ── */
+        .hero { text-align: center; margin-bottom: 64px; animation: fadeUp 0.7s ease both; }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #34d399; font-size: 0.78rem; font-weight: 600;
+            padding: 6px 14px; border-radius: 9999px;
+            letter-spacing: 0.06em; text-transform: uppercase;
+            margin-bottom: 28px;
+        }
+        .badge-dot {
+            width: 7px; height: 7px; background: #10b981;
+            border-radius: 50%; box-shadow: 0 0 10px #10b981;
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900; line-height: 1.05;
+            letter-spacing: -0.02em;
+            background: linear-gradient(140deg, #fff 0%, #c4b5fd 50%, #67e8f9 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .hero-desc {
+            font-size: 1.1rem; color: var(--muted-light);
+            line-height: 1.8; max-width: 560px; margin: 0 auto 36px;
+        }
+
+        .hero-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .tag {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted-light);
+            padding: 5px 14px; border-radius: 8px;
+            font-size: 0.82rem; font-weight: 500;
+        }
+
+        /* ── Section ── */
+        section { margin-bottom: 48px; animation: fadeUp 0.7s ease both; }
+        section:nth-child(2) { animation-delay: 0.1s; }
+        section:nth-child(3) { animation-delay: 0.2s; }
+        section:nth-child(4) { animation-delay: 0.3s; }
+
+        .section-label {
+            font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--primary); margin-bottom: 16px;
+        }
+
+        /* ── Endpoint Grid ── */
+        .endpoint-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .ep-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px 18px;
+            display: flex; align-items: center; gap: 12px;
+            transition: border-color 0.25s, background 0.25s, transform 0.25s;
+            cursor: default;
+        }
+        .ep-card:hover {
+            border-color: var(--border-hover);
+            background: var(--surface-hover);
+            transform: translateY(-3px);
+        }
+
+        .method-badge {
+            font-size: 0.68rem; font-weight: 800; padding: 3px 8px;
+            border-radius: 6px; letter-spacing: 0.05em;
+            flex-shrink: 0;
+        }
+        .post { background: rgba(16,185,129,0.12); color: #34d399; }
+        .get  { background: rgba(6,182,212,0.12); color: #22d3ee; }
+
+        .ep-path { font-family: monospace; font-size: 0.9rem; color: var(--text); }
+
+        /* ── Task Cards ── */
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+
+        .task-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 24px;
+            transition: border-color 0.25s, transform 0.25s;
+        }
+        .task-card:hover { border-color: var(--border-hover); transform: translateY(-4px); }
+
+        .task-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .task-number {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem; color: white; flex-shrink: 0;
+        }
+        .task-name { font-weight: 700; font-size: 1rem; }
+        .task-diff {
+            font-size: 0.72rem; font-weight: 600; padding: 3px 10px;
+            border-radius: 9999px; margin-left: auto;
+        }
+        .diff-easy   { background: rgba(16,185,129,0.12); color: #34d399; }
+        .diff-medium { background: rgba(245,158,11,0.12); color: #fbbf24; }
+        .diff-hard   { background: rgba(239,68,68,0.12);  color: #f87171; }
+        .task-desc { font-size: 0.9rem; color: var(--muted-light); line-height: 1.6; }
+
+        /* ── Console ── */
+        .console-wrap { position: relative; }
+        .console-bar {
+            display: flex; align-items: center; gap: 8px;
+            background: #111117; border: 1px solid var(--border);
+            border-bottom: none; border-radius: 12px 12px 0 0;
+            padding: 12px 18px;
+        }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-r { background: #ff5f57; } .dot-y { background: #febc2e; } .dot-g { background: #28c840; }
+        .console-title { font-size: 0.8rem; color: var(--muted); margin-left: auto; }
+
+        .console-output {
+            background: #08080d;
+            border: 1px solid var(--border);
+            border-top: none; border-radius: 0 0 12px 12px;
+            padding: 20px 24px; min-height: 120px;
+            font-family: 'ui-monospace', 'SFMono-Regular', monospace;
+            font-size: 0.88rem; line-height: 1.7;
+            color: #a5b4fc; white-space: pre-wrap;
+            word-break: break-all; overflow-y: auto; max-height: 360px;
+        }
+        .c-comment { color: #475569; }
+        .c-key     { color: #93c5fd; }
+        .c-str     { color: #86efac; }
+        .c-num     { color: #fda4af; }
+        .c-bool    { color: #fbbf24; }
+        .c-err     { color: #f87171; }
+
+        /* ── Actions ── */
+        .action-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+
+        .btn {
+            padding: 13px 26px; border-radius: 12px;
+            font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.95rem;
+            cursor: pointer; transition: all 0.25s ease;
+            border: 1px solid transparent; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white; box-shadow: 0 4px 20px rgba(109,40,217,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(109,40,217,0.5); }
+        .btn-ghost {
+            background: var(--surface); color: var(--muted-light);
+            border-color: var(--border);
+        }
+        .btn-ghost:hover { background: var(--surface-hover); border-color: var(--border-hover); color: var(--text); transform: translateY(-2px); }
+
+        .btn:active { transform: translateY(1px) !important; }
+
+        /* ── Stats ── */
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+        .stat-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; text-align: center;
+        }
+        .stat-val {
+            font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800;
+            background: linear-gradient(135deg, #fff, #c4b5fd);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-lbl { font-size: 0.78rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center; padding: 32px 0 0;
+            color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--border);
+        }
+        footer a { color: var(--primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ── Animation ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            main { padding: 40px 16px 60px; }
+            h1 { font-size: 2.2rem; }
+            .stats-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<main>
+
+    <!-- ── Hero ── -->
+    <div class="hero">
+        <div class="badge"><span class="badge-dot"></span>System Online</div>
+        <h1>Customer Support<br>Triage Environment</h1>
+        <p class="hero-desc">
+            A production-grade reinforcement learning environment for the
+            <strong>Meta PyTorch Hackathon</strong>. AI agents read tickets, classify priority,
+            route departments, and draft customer responses.
+        </p>
+        <div class="hero-tags">
+            <span class="tag">🤖 OpenEnv</span>
+            <span class="tag">🔥 PyTorch</span>
+            <span class="tag">⚡ FastAPI</span>
+            <span class="tag">🧠 Sentence Transformers</span>
+        </div>
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-val">3</div>
+            <div class="stat-lbl">Tasks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">50+</div>
+            <div class="stat-lbl">Tickets</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">0.99</div>
+            <div class="stat-lbl">Max Reward</div>
+        </div>
+    </div>
+
+    <!-- ── Tasks ── -->
+    <section>
+        <div class="section-label">Environment Tasks</div>
+        <div class="task-grid">
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">1</div>
+                    <span class="task-name">task1</span>
+                    <span class="task-diff diff-easy">Easy</span>
+                </div>
+                <p class="task-desc">Classify ticket priority as <strong>low</strong>, <strong>medium</strong>, or <strong>high</strong> based on the support request content.</p>
+            </div>
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">2</div>
+                    <span class="task-name">task2</span>
+                    <span class="task-diff diff-medium">Medium</span>
+                </div>
+                <p class="task-desc">Classify priority and route to the correct department: <strong>billing</strong>, <strong>technical</strong>, or <strong>general</strong>.</p>
+            </div>
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">3</div>
+                    <span class="task-name">task3</span>
+                    <span class="task-diff diff-hard">Hard</span>
+                </div>
+                <p class="task-desc">Classify, route, and compose a <strong>contextually appropriate draft response</strong> graded by PyTorch semantic similarity.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Endpoints ── -->
+    <section>
+        <div class="section-label">API Endpoints</div>
+        <div class="endpoint-grid">
+            <div class="ep-card"><span class="method-badge post">POST</span><span class="ep-path">/reset</span></div>
+            <div class="ep-card"><span class="method-badge post">POST</span><span class="ep-path">/step</span></div>
+            <div class="ep-card"><span class="method-badge get">GET</span><span class="ep-path">/state</span></div>
+            <div class="ep-card"><span class="method-badge get">GET</span><span class="ep-path">/tasks</span></div>
+            <div class="ep-card"><span class="method-badge get">GET</span><span class="ep-path">/grader</span></div>
+            <div class="ep-card"><span class="method-badge get">GET</span><span class="ep-path">/baseline</span></div>
+        </div>
+    </section>
+
+    <!-- ── Live Console ── -->
+    <section>
+        <div class="section-label">Live API Console</div>
+        <div class="action-row">
+            <button id="btn-tasks" class="btn btn-primary" onclick="pingAPI('/tasks', this)">▶ View Tasks</button>
+            <button id="btn-baseline" class="btn btn-ghost" onclick="pingAPI('/baseline', this)">📊 Run Baseline</button>
+            <button id="btn-state" class="btn btn-ghost" onclick="pingAPI('/state', this)">📡 Get State</button>
+        </div>
+        <div class="console-wrap">
+            <div class="console-bar">
+                <div class="dot dot-r"></div>
+                <div class="dot dot-y"></div>
+                <div class="dot dot-g"></div>
+                <span class="console-title">OpenEnv Console</span>
+            </div>
+            <div id="console-output" class="console-output"><span class="c-comment">// Click a button above to interact with the live API...</span></div>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    Built for the <a href="https://huggingface.co" target="_blank">Meta PyTorch Hackathon</a> &middot;
+    Powered by <strong>FastAPI</strong> + <strong>PyTorch</strong> &middot; OpenEnv v1.0
+</footer>
+
+<script>
+    let activeBtn = null;
+
+    function syntaxHighlight(json) {
+        return JSON.stringify(json, null, 2)
+            .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) return `<span class="c-key">${match}</span>`;
+                    return `<span class="c-str">${match}</span>`;
+                }
+                if (/true|false/.test(match)) return `<span class="c-bool">${match}</span>`;
+                if (/null/.test(match)) return `<span class="c-comment">${match}</span>`;
+                return `<span class="c-num">${match}</span>`;
+            });
+    }
+
+    async function pingAPI(endpoint, btn) {
+        const output = document.getElementById('console-output');
+
+        // Reset previous active button styles
+        if (activeBtn) { activeBtn.classList.remove('btn-primary'); activeBtn.classList.add('btn-ghost'); }
+        btn.classList.remove('btn-ghost'); btn.classList.add('btn-primary');
+        activeBtn = btn;
+
+        output.innerHTML = `<span class="c-comment">// → GET ${endpoint}...</span>`;
+
+        try {
+            const t0 = performance.now();
+            const res = await fetch(endpoint);
+            const data = await res.json();
+            const ms = Math.round(performance.now() - t0);
+            output.innerHTML = `<span class="c-comment">// ✓ 200 OK  (${ms}ms)</span>\n\n${syntaxHighlight(data)}`;
+        } catch (err) {
+            output.innerHTML = `<span class="c-err">// ✗ Error: ${err.message}</span>\n\n<span class="c-comment">// Make sure the server is running on the same host.</span>`;
+        }
+    }
+</script>
+
+</body>
+</html>
