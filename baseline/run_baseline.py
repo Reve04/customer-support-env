@@ -2,7 +2,7 @@ import urllib.request
 import urllib.error
 import json
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://127.0.0.1:7860"
 
 def call(method, path, data=None, params=None):
     url = BASE_URL + path
