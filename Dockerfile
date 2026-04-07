@@ -1,11 +1,16 @@
-FROM python:3.11.9-slim
+FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --timeout=120 \
-    torch --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir --timeout=120 -r requirements.txt
+
+# Install torch CPU-only first (smaller, avoids CUDA 2GB+ download)
+RUN pip install --no-cache-dir --timeout=300 --retries=5 \
+    torch==2.2.2+cpu --index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining dependencies
+RUN pip install --no-cache-dir --timeout=300 --retries=5 \
+    -r requirements.txt
 
 COPY . .
 
