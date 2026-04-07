@@ -1,9 +1,11 @@
-FROM python:3.11-slim
+FROM python:3.11.9-slim
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --timeout=120 \
+    torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir --timeout=120 -r requirements.txt
 
 COPY . .
 
