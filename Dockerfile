@@ -1,12 +1,12 @@
-FROM python:3.11-slim-bookworm
+FROM ghcr.io/dockerlibrary/python:3.11-slim
 
 WORKDIR /app
 
 COPY requirements.txt .
 
-# Install torch CPU-only first (smaller, avoids CUDA 2GB+ download)
+# Install torch CPU-only first (smaller ~200MB vs 2GB+ CUDA)
 RUN pip install --no-cache-dir --timeout=300 --retries=5 \
-    torch==2.2.2+cpu --index-url https://download.pytorch.org/whl/cpu
+    "torch==2.2.2+cpu" --index-url https://download.pytorch.org/whl/cpu
 
 # Install remaining dependencies
 RUN pip install --no-cache-dir --timeout=300 --retries=5 \
