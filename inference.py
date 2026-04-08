@@ -93,30 +93,30 @@ def run_inference():
     print("Starting LLM evaluations...", flush=True)
 
     # Validate required env var
+    client = None
     if not OPENAI_API_KEY:
         print("ERROR: OPENAI_API_KEY (or HF_TOKEN) environment variable is not set.", flush=True)
-        # Instead of crashing, we'll try to proceed or exit gracefully if required.
-        # But for validator, missing key is usually fatal.
-        raise RuntimeError("Missing API key — set OPENAI_API_KEY or HF_TOKEN.")
-
-    # Initialize OpenAI client inside the function — safe from import-time crashes
-    try:
-        from openai import OpenAI
-        
-        # Ensure API_BASE_URL is a valid string if provided, otherwise let OpenAI library default
-        client_kwargs = {
-            "api_key": OPENAI_API_KEY,
-        }
-        if API_BASE_URL:
-            client_kwargs["base_url"] = API_BASE_URL
+    else:
+        # Initialize OpenAI client inside the function — safe from import-time crashes
+        try:
+            from openai import OpenAI
             
-        client = OpenAI(**client_kwargs)
-        print(f"OpenAI client initialized. base_url={API_BASE_URL or 'default'}, model={MODEL_NAME}", flush=True)
-    except Exception as e:
-        print(f"ERROR: Failed to initialize OpenAI client with base_url={API_BASE_URL}: {e}", flush=True)
-        import traceback
-        traceback.print_exc()
-        raise
+            # Ensure API_BASE_URL is a valid string if provided, otherwise let OpenAI library default
+            client_kwargs = {
+                "api_key": OPENAI_API_KEY,
+            }
+            if API_BASE_URL:
+                url = API_BASE_URL
+                if not url.startswith("http://") and not url.startswith("https://"):
+                    url = "http://" + url
+                client_kwargs["base_url"] = url
+                
+            client = OpenAI(**client_kwargs)
+            print(f"OpenAI client initialized. base_url={client_kwargs.get('base_url', 'default')}, model={MODEL_NAME}", flush=True)
+        except Exception as e:
+            print(f"ERROR: Failed to initialize OpenAI client with base_url={API_BASE_URL}: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
 
     all_tasks = ["task1", "task2", "task3"]
 
