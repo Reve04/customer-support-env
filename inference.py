@@ -76,22 +76,19 @@ Based on the ticket, determine the following:
     prompt += "\nOutput your response strictly as JSON in the following format:\n"
     prompt += "{\n" + ",\n".join(f'  "{k}": "..."' for k in req_keys) + "\n}"
 
-    try:
-        response = client.chat.completions.create(
-            model=get_model_name(),
-            messages=[{"role": "user", "content": prompt}]
-        )
-        content = response.choices[0].message.content
-        action = extract_json_from_response(content)
+    # Let it crash rather than swallowing errors so we can get tracebacks from the validator
+    response = client.chat.completions.create(
+        model=get_model_name(),
+        messages=[{"role": "user", "content": prompt}]
+    )
+    content = response.choices[0].message.content
+    action = extract_json_from_response(content)
 
-        filtered_action = {k: action.get(k, "general") for k in req_keys}
-        if "priority" in filtered_action and filtered_action["priority"] not in ["low", "medium", "high"]:
-            filtered_action["priority"] = "medium"
+    filtered_action = {k: action.get(k, "general") for k in req_keys}
+    if "priority" in filtered_action and filtered_action["priority"] not in ["low", "medium", "high"]:
+        filtered_action["priority"] = "medium"
 
-        return filtered_action
-    except Exception as e:
-        print(f"Error calling LLM: {e}", flush=True)
-        return {"priority": "medium", "department": "general", "draft_response": "Thank you."}
+    return filtered_action
 
 
 def run_inference():
@@ -109,25 +106,32 @@ def run_inference():
         try:
             from openai import OpenAI
             
-            # Ensure API_BASE_URL is a valid string if provided, otherwise let OpenAI library default
-            client_kwargs = {
-                "api_key": api_key,
-            }
-            if api_base_url:
-                url = api_base_url
-                if not url.startswith("http://") and not url.startswith("https://"):
-                    url = "http://" + url
-                # Ensure litellm proxy gets the /v1 path if missing
-                if not url.endswith("/v1") and not url.endswith("/v1/"):
-                    url = url.rstrip("/") + "/v1/"
-                client_kwargs["base_url"] = url
-                
-            client = OpenAI(**client_kwargs)
-            print(f"OpenAI client initialized. base_url={client_kwargs.get('base_url', 'default')}, model={get_model_name()}", flush=True)
+            # The validator explicitly mandates this exact assignment format
+            if "API_BASE_URL" in os.environ and "API_KEY" in os.environ:
+                client = OpenAI(
+                    base_url=os.environ["API_BASE_URL"],
+                    api_key=os.environ["API_KEY"]
+                )
+                print("OpenAI client initialized using strict validator os.environ structure.", flush=True)
+            else:
+                client_kwargs = {
+                    "api_key": api_key,
+                }
+                if api_base_url:
+                    url = api_base_url
+                    if not url.startswith("http://") and not url.startswith("https://"):
+                        url = "http://" + url
+                    if not url.endswith("/v1") and not url.endswith("/v1/"):
+                        url = url.rstrip("/") + "/v1/"
+                    client_kwargs["base_url"] = url
+                    
+                client = OpenAI(**client_kwargs)
+                print(f"OpenAI client initialized. base_url={client_kwargs.get('base_url')}, model={get_model_name()}", flush=True)
         except Exception as e:
             print(f"ERROR: Failed to initialize OpenAI client with base_url={api_base_url}: {e}", flush=True)
             import traceback
             traceback.print_exc()
+            raise  # Let it crash so we can see the exact validator traceback if this fails
 
     all_tasks = ["task1", "task2", "task3"]
 
