@@ -3,9 +3,6 @@ import json
 import urllib.request
 import re
 
-# Define the local environment URL
-ENV_URL = os.environ.get("ENV_URL", "http://127.0.0.1:7860")
-
 # Retrieve and clean environment variables
 def get_env_var(name, default=None):
     val = os.environ.get(name)
@@ -15,13 +12,21 @@ def get_env_var(name, default=None):
             return default
     return val or default
 
-API_BASE_URL = get_env_var("API_BASE_URL", "https://api.openai.com/v1")
-MODEL_NAME = get_env_var("MODEL_NAME", "gpt-3.5-turbo")
-OPENAI_API_KEY = get_env_var("API_KEY") or get_env_var("OPENAI_API_KEY") or get_env_var("HF_TOKEN")
+def get_env_url():
+    return os.environ.get("ENV_URL", "http://127.0.0.1:7860")
+
+def get_api_base_url():
+    return get_env_var("API_BASE_URL", "https://api.openai.com/v1")
+
+def get_model_name():
+    return get_env_var("MODEL_NAME", "gpt-3.5-turbo")
+
+def get_api_key():
+    return get_env_var("API_KEY") or get_env_var("OPENAI_API_KEY") or get_env_var("HF_TOKEN")
 
 
 def env_call(method, path, data=None, params=None):
-    url = ENV_URL + path
+    url = get_env_url() + path
     if params:
         url += "?" + "&".join(f"{k}={v}" for k, v in params.items())
     body = json.dumps(data).encode() if data else None
@@ -73,7 +78,7 @@ Based on the ticket, determine the following:
 
     try:
         response = client.chat.completions.create(
-            model=MODEL_NAME,
+            model=get_model_name(),
             messages=[{"role": "user", "content": prompt}]
         )
         content = response.choices[0].message.content
@@ -92,9 +97,12 @@ Based on the ticket, determine the following:
 def run_inference():
     print("Starting LLM evaluations...", flush=True)
 
+    api_key = get_api_key()
+    api_base_url = get_api_base_url()
+
     # Validate required env var
     client = None
-    if not OPENAI_API_KEY:
+    if not api_key:
         print("ERROR: API_KEY (or OPENAI_API_KEY / HF_TOKEN) environment variable is not set.", flush=True)
     else:
         # Initialize OpenAI client inside the function — safe from import-time crashes
@@ -103,18 +111,21 @@ def run_inference():
             
             # Ensure API_BASE_URL is a valid string if provided, otherwise let OpenAI library default
             client_kwargs = {
-                "api_key": OPENAI_API_KEY,
+                "api_key": api_key,
             }
-            if API_BASE_URL:
-                url = API_BASE_URL
+            if api_base_url:
+                url = api_base_url
                 if not url.startswith("http://") and not url.startswith("https://"):
                     url = "http://" + url
+                # Ensure litellm proxy gets the /v1 path if missing
+                if not url.endswith("/v1") and not url.endswith("/v1/"):
+                    url = url.rstrip("/") + "/v1/"
                 client_kwargs["base_url"] = url
                 
             client = OpenAI(**client_kwargs)
-            print(f"OpenAI client initialized. base_url={client_kwargs.get('base_url', 'default')}, model={MODEL_NAME}", flush=True)
+            print(f"OpenAI client initialized. base_url={client_kwargs.get('base_url', 'default')}, model={get_model_name()}", flush=True)
         except Exception as e:
-            print(f"ERROR: Failed to initialize OpenAI client with base_url={API_BASE_URL}: {e}", flush=True)
+            print(f"ERROR: Failed to initialize OpenAI client with base_url={api_base_url}: {e}", flush=True)
             import traceback
             traceback.print_exc()
 
