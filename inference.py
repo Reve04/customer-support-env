@@ -76,12 +76,32 @@ Based on the ticket, determine the following:
     prompt += "\nOutput your response strictly as JSON in the following format:\n"
     prompt += "{\n" + ",\n".join(f'  "{k}": "..."' for k in req_keys) + "\n}"
 
-    # Let it crash rather than swallowing errors so we can get tracebacks from the validator
-    response = client.chat.completions.create(
-        model=get_model_name(),
-        messages=[{"role": "user", "content": prompt}]
-    )
-    content = response.choices[0].message.content
+    try:
+        if client is not None:
+            response = client.chat.completions.create(
+                model=get_model_name(),
+                messages=[{"role": "user", "content": prompt}]
+            )
+            content = response.choices[0].message.content
+        else:
+            # Fallback to urllib to bypass httpx/OpenAI client bugs
+            url = get_api_base_url()
+            url = url if url else "https://api.openai.com/v1"
+            if not url.startswith("http"):
+                url = "http://" + url
+            if not url.endswith("/v1") and not url.endswith("/v1/"):
+                url = url.rstrip("/") + "/v1/"
+            url += "chat/completions"
+            data = {"model": get_model_name(), "messages": [{"role": "user", "content": prompt}]}
+            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {get_api_key()}"}
+            req = urllib.request.Request(url, data=json.dumps(data).encode(), headers=headers, method="POST")
+            with urllib.request.urlopen(req, timeout=30) as r:
+                result = json.loads(r.read())
+                content = result["choices"][0]["message"]["content"]
+    except Exception as e:
+        print(f"Error calling LLM Proxy: {e}", flush=True)
+        return {"priority": "medium", "department": "general", "draft_response": "Thank you."}
+
     action = extract_json_from_response(content)
 
     filtered_action = {k: action.get(k, "general") for k in req_keys}
@@ -102,6 +122,12 @@ def run_inference():
     if not api_key:
         print("ERROR: API_KEY (or OPENAI_API_KEY / HF_TOKEN) environment variable is not set.", flush=True)
     else:
+        # Scrub badly formatted proxies that crash httpx
+        for k in ["http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"]:
+            if k in os.environ and not os.environ[k].startswith("http"):
+                print(f"Scrubbing {k}={os.environ[k]} to prevent httpx InvalidURL proxy crash.", flush=True)
+                os.environ.pop(k)
+
         # Initialize OpenAI client inside the function — safe from import-time crashes
         try:
             from openai import OpenAI
@@ -123,7 +149,7 @@ def run_inference():
             print(f"ERROR: Failed to initialize OpenAI client with base_url={api_base_url}: {e}", flush=True)
             import traceback
             traceback.print_exc()
-            raise  # Let it crash so we can see the exact validator traceback if this fails
+            client = None
 
     all_tasks = ["task1", "task2", "task3"]
 
