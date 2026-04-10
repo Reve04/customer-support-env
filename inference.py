@@ -113,6 +113,14 @@ def run_inference():
         try:
             from openai import OpenAI
             
+            if "API_BASE_URL" in os.environ:
+                os.environ["API_BASE_URL"] = os.environ["API_BASE_URL"].strip()
+                if not os.environ["API_BASE_URL"].startswith("http"):
+                    os.environ["API_BASE_URL"] = "http://" + os.environ["API_BASE_URL"]
+                    
+            if "API_KEY" in os.environ:
+                os.environ["API_KEY"] = os.environ["API_KEY"].strip()
+            
             if "API_BASE_URL" in os.environ and "API_KEY" in os.environ:
                 client = OpenAI(
                     base_url=os.environ["API_BASE_URL"],
