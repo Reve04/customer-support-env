@@ -103,10 +103,6 @@ def run_inference():
     if not api_key:
         print("ERROR: API_KEY (or OPENAI_API_KEY / HF_TOKEN) environment variable is not set.", flush=True)
     else:
-        # Create a sandboxed httpx client that ignores broken proxy/SSL environment variables
-        import httpx
-        safe_http_client = httpx.Client(trust_env=False)
-        
         # Initialize OpenAI client inside the function — safe from import-time crashes
         try:
             from openai import OpenAI
@@ -116,6 +112,8 @@ def run_inference():
                 if val:
                     if not val.startswith("http"):
                         val = "http://" + val
+                    if not val.endswith("/v1") and not val.endswith("/v1/"):
+                        val = val.rstrip("/") + "/v1/"
                     os.environ["API_BASE_URL"] = val
                 else:
                     del os.environ["API_BASE_URL"]
@@ -130,13 +128,11 @@ def run_inference():
             if "API_BASE_URL" in os.environ and "API_KEY" in os.environ:
                 client = OpenAI(
                     base_url=os.environ["API_BASE_URL"],
-                    api_key=os.environ["API_KEY"],
-                    http_client=safe_http_client
+                    api_key=os.environ["API_KEY"]
                 )
             else:
                 client_kwargs = {
                     "api_key": api_key,
-                    "http_client": safe_http_client
                 }
                 if api_base_url:
                     url = api_base_url
@@ -171,7 +167,9 @@ def run_inference():
                     obs = result.get("observation", {})
             except Exception as e:
                 print(f"ERROR in {task_name} episode {i+1}: {e}", flush=True)
-                continue
+                import traceback
+                traceback.print_exc()
+                raise  # Raise immediately so the validator exposes the API connection error vs a silent bypass.
 
         print(f"[END] {task_name}", flush=True)
 
