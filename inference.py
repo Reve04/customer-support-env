@@ -125,15 +125,17 @@ def run_inference():
                 else:
                     del os.environ["API_KEY"]
             
-            # Sandbox httpx to bypass all proxy/SSL initialization crashes
-            import httpx
-            safe_client = httpx.Client(trust_env=False)
+            # Fix deeply injected proxy variables that crash httpx without breaking urllib
+            for k in ["http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"]:
+                if k in os.environ:
+                    pval = os.environ[k].strip()
+                    if pval and not pval.startswith("http"):
+                        os.environ[k] = "http://" + pval
             
             if "API_BASE_URL" in os.environ and "API_KEY" in os.environ:
                 client = OpenAI(
                     base_url=os.environ["API_BASE_URL"],
-                    api_key=os.environ["API_KEY"],
-                    http_client=safe_client
+                    api_key=os.environ["API_KEY"]
                 )
             else:
                 client_kwargs = {
