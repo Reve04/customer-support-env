@@ -103,12 +103,10 @@ def run_inference():
     if not api_key:
         print("ERROR: API_KEY (or OPENAI_API_KEY / HF_TOKEN) environment variable is not set.", flush=True)
     else:
-        # Scrub badly formatted proxies that crash httpx
-        for k in ["http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"]:
-            if k in os.environ and not os.environ[k].startswith("http"):
-                print(f"Scrubbing {k}={os.environ[k]} to prevent httpx InvalidURL proxy crash.", flush=True)
-                os.environ.pop(k)
-
+        # Create a sandboxed httpx client that ignores broken proxy/SSL environment variables
+        import httpx
+        safe_http_client = httpx.Client(trust_env=False)
+        
         # Initialize OpenAI client inside the function — safe from import-time crashes
         try:
             from openai import OpenAI
@@ -132,11 +130,13 @@ def run_inference():
             if "API_BASE_URL" in os.environ and "API_KEY" in os.environ:
                 client = OpenAI(
                     base_url=os.environ["API_BASE_URL"],
-                    api_key=os.environ["API_KEY"]
+                    api_key=os.environ["API_KEY"],
+                    http_client=safe_http_client
                 )
             else:
                 client_kwargs = {
                     "api_key": api_key,
+                    "http_client": safe_http_client
                 }
                 if api_base_url:
                     url = api_base_url
