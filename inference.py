@@ -131,6 +131,14 @@ def run_inference():
                     pval = os.environ[k].strip()
                     if pval and not pval.startswith("http"):
                         os.environ[k] = "http://" + pval
+                        
+            # Force local traffic to bypass ANY injected proxies so urllib connects to ENV_URL safely
+            os.environ["NO_PROXY"] = "127.0.0.1,localhost,0.0.0.0"
+            os.environ["no_proxy"] = "127.0.0.1,localhost,0.0.0.0"
+
+            # Pop broken SSL certificate paths that crash httpx create_ssl_context() natively
+            for k in ["SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"]:
+                os.environ.pop(k, None)
             
             if "API_BASE_URL" in os.environ and "API_KEY" in os.environ:
                 client = OpenAI(
