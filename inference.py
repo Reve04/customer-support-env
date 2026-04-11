@@ -170,7 +170,17 @@ def run_inference():
                     client_kwargs["base_url"] = url
                     
                 client = OpenAI(**client_kwargs)
-            print(f"OpenAI client initialized. model={get_model_name()}", flush=True)
+            print(f"OpenAI client initialized. Requesting proxy topology...", flush=True)
+
+            # Dynamically select supported proxy model to bypass hardcoded model constraints
+            try:
+                available_models = client.models.list()
+                if available_models.data:
+                    discovered_model = available_models.data[0].id
+                    os.environ["MODEL_NAME"] = discovered_model
+                    print(f"Dynamically discovered and bound model from LiteLLM proxy: {discovered_model}", flush=True)
+            except Exception as e:
+                print(f"Warning: Could not fetch models dynamically, preserving default {get_model_name()}: {e}", flush=True)
         except Exception as e:
             print(f"ERROR: Failed to initialize OpenAI client with base_url={api_base_url}: {e}", flush=True)
             import traceback
