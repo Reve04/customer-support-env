@@ -16,7 +16,7 @@ class Action(BaseModel):
 
 class Reward(BaseModel):
     score: float
-    max_score: float = 1.0  # Matches reward.max in openenv.yaml
+    max_score: float = 0.99  # Strict open interval - no 1.0 ever sent in response
     feedback: str
 
     @field_validator("score", mode="before")
