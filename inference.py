@@ -125,20 +125,16 @@ def run_inference():
                 else:
                     del os.environ["API_KEY"]
             
-            # Fix deeply injected proxy variables that crash httpx without breaking urllib
-            for k in ["http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"]:
+            # Purge all network proxy and SSL cert pollution to securely bypass httpx init crashes 
+            # and prevent urllib proxy hijacking!
+            for k in [
+                "http_proxy", "https_proxy", "all_proxy", 
+                "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", 
+                "SSL_CERT_FILE", "SSL_CERT_DIR", 
+                "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"
+            ]:
                 if k in os.environ:
-                    pval = os.environ[k].strip()
-                    if pval and not pval.startswith("http"):
-                        os.environ[k] = "http://" + pval
-                        
-            # Force local traffic to bypass ANY injected proxies so urllib connects to ENV_URL safely
-            os.environ["NO_PROXY"] = "127.0.0.1,localhost,0.0.0.0"
-            os.environ["no_proxy"] = "127.0.0.1,localhost,0.0.0.0"
-
-            # Pop broken SSL certificate paths that crash httpx create_ssl_context() natively
-            for k in ["SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"]:
-                os.environ.pop(k, None)
+                    del os.environ[k]
             
             if "API_BASE_URL" in os.environ and "API_KEY" in os.environ:
                 client = OpenAI(
