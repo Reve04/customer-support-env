@@ -136,14 +136,20 @@ def run_inference():
                 if k in os.environ:
                     del os.environ[k]
             
+            # Sandbox httpx to permanently bypass the unpatchable netrc/SSL environment initialization crash
+            import httpx
+            safe_client = httpx.Client(trust_env=False)
+            
             if "API_BASE_URL" in os.environ and "API_KEY" in os.environ:
                 client = OpenAI(
                     base_url=os.environ["API_BASE_URL"],
-                    api_key=os.environ["API_KEY"]
+                    api_key=os.environ["API_KEY"],
+                    http_client=safe_client
                 )
             else:
                 client_kwargs = {
                     "api_key": api_key,
+                    "http_client": safe_client
                 }
                 if api_base_url:
                     url = api_base_url
