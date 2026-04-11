@@ -16,7 +16,7 @@ class Action(BaseModel):
 
 class Reward(BaseModel):
     score: float
-    max_score: float = 0.99  # Never expose 1.0 as max to avoid boundary confusion
+    max_score: float = 1.0  # Matches reward.max in openenv.yaml
     feedback: str
 
     @field_validator("score", mode="before")
