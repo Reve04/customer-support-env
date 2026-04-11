@@ -4,11 +4,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-# Install torch CPU-only (avoids 2GB+ CUDA download)
-RUN pip install --no-cache-dir --timeout=300 --retries=5 \
-    "torch==2.2.2+cpu" --index-url https://download.pytorch.org/whl/cpu
-
-# Install remaining dependencies
+# Install all dependencies (no torch needed - grader uses keyword matching)
 RUN pip install --no-cache-dir --timeout=300 --retries=5 \
     -r requirements.txt
 

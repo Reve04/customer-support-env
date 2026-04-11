@@ -1,12 +1,14 @@
-import difflib
-import torch
-from sentence_transformers import SentenceTransformer, util
-
-# Load model globally so it only initializes once
-sem_model = SentenceTransformer("all-MiniLM-L6-v2")
-
 def _clamp(score):
-    return max(0.01, min(0.99, float(score)))
+    """Enforce strict open interval (0, 1). Also handles NaN/inf safely."""
+    try:
+        v = float(score)
+        # NaN check: NaN != NaN is always True
+        if v != v or v == float('inf') or v == float('-inf'):
+            return 0.5
+        return max(0.01, min(0.99, v))
+    except (ValueError, TypeError):
+        return 0.5
+
 
 def grade_task1(action, ticket):
     correct = ticket["priority"]
@@ -69,30 +71,40 @@ def get_ideal_response(ticket):
 
 
 def grade_task3(action, ticket):
+    """
+    Grades task3: priority + department (60%) + draft response quality (40%).
+    Uses keyword-based scoring for the draft response - fast, deterministic, no model needed.
+    """
     priority_score, priority_feedback = grade_task2(action, ticket)
     base_score = priority_score * 0.6
 
     draft = action.draft_response or ""
-    draft_score = 0.0
+    draft_lower = draft.lower()
     feedback = priority_feedback
 
     if len(draft) < 20:
         feedback += " Draft too short."
+        draft_score = 0.0
     else:
-        ideal_response = get_ideal_response(ticket)
-        
-        # Calculate semantic similarity using PyTorch based SentenceTransformers
-        emb_draft = sem_model.encode(draft.lower(), convert_to_tensor=True)
-        emb_ideal = sem_model.encode(ideal_response.lower(), convert_to_tensor=True)
-        
-        # Returns a float tensor, item() gets the Python float
-        sim = util.pytorch_cos_sim(emb_draft, emb_ideal).item()
-        
-        # Scale similarity to a max of 0.4
-        # Since cosine similarity can range from -1 to 1, but typical meaningful matches are 0.4+
-        scaled_sim = max(0.0, min(1.0, (sim - 0.4) / 0.5)) 
-        draft_score = round(scaled_sim * 0.4, 2)
-        feedback += f" Semantic match score: {round(scaled_sim*100)}%."
+        # Keyword coverage scoring using ticket's own keyword list
+        keywords = ticket.get("keywords", [])
+        if keywords:
+            matches = sum(1 for kw in keywords if kw.lower() in draft_lower)
+            keyword_ratio = matches / len(keywords)
+        else:
+            keyword_ratio = 0.5  # neutral if no keywords defined
 
-    total = round(base_score + draft_score, 2)
+        # Also check for department-appropriate language
+        ideal = get_ideal_response(ticket).lower()
+        ideal_words = set(ideal.split())
+        draft_words = set(draft_lower.split())
+        overlap = len(ideal_words & draft_words)
+        word_ratio = min(1.0, overlap / max(len(ideal_words), 1))
+
+        # Blend keyword coverage and word overlap
+        combined = (keyword_ratio * 0.6) + (word_ratio * 0.4)
+        draft_score = round(combined * 0.4, 3)
+        feedback += f" Draft quality: {int(combined * 100)}%."
+
+    total = round(base_score + draft_score, 3)
     return _clamp(total), feedback
