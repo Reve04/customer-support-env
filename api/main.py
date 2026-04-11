@@ -81,5 +81,6 @@ def baseline():
                     )
                 _, reward, done, _ = env.step(action)
                 scores.append(reward.score)
-        results[task_name] = round(sum(scores) / len(scores), 2)
+        avg = sum(scores) / len(scores)
+        results[task_name] = round(max(0.01, min(0.99, avg)), 2)
     return results

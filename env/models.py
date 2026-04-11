@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
 
 class Observation(BaseModel):
@@ -16,5 +16,11 @@ class Action(BaseModel):
 
 class Reward(BaseModel):
     score: float
-    max_score: float
+    max_score: float = 0.99  # Never expose 1.0 as max to avoid boundary confusion
     feedback: str
+
+    @field_validator("score", mode="before")
+    @classmethod
+    def clamp_score(cls, v):
+        """Unconditionally enforce strict open interval (0, 1)."""
+        return max(0.01, min(0.99, float(v)))
