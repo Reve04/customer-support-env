@@ -26,14 +26,24 @@ def get_api_key():
 
 
 def env_call(method, path, data=None, params=None):
+    import time
     url = get_env_url() + path
     if params:
         url += "?" + "&".join(f"{k}={v}" for k, v in params.items())
     body = json.dumps(data).encode() if data else None
     headers = {"Content-Type": "application/json"}
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return json.loads(r.read())
+    
+    max_retries = 15
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return json.loads(r.read())
+        except urllib.error.URLError as e:
+            if attempt == max_retries - 1:
+                raise
+            print(f"Waiting for openenv server at {url} to start... (Attempt {attempt+1}/{max_retries}): {e}", flush=True)
+            time.sleep(2)
 
 
 def extract_json_from_response(content):
