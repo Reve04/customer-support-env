@@ -5,20 +5,23 @@ from sentence_transformers import SentenceTransformer, util
 # Load model globally so it only initializes once
 sem_model = SentenceTransformer("all-MiniLM-L6-v2")
 
+def _clamp(score):
+    return max(0.01, min(0.99, float(score)))
+
 def grade_task1(action, ticket):
     correct = ticket["priority"]
     guess = action.priority.lower().strip()
 
     if guess == correct:
-        return 0.99, "Correct priority."
+        return _clamp(0.99), "Correct priority."
 
     priority_order = ["low", "medium", "high"]
     if correct in priority_order and guess in priority_order:
         diff = abs(priority_order.index(guess) - priority_order.index(correct))
         if diff == 1:
-            return 0.5, f"Off by one. Expected {correct}, got {guess}."
+            return _clamp(0.5), f"Off by one. Expected {correct}, got {guess}."
 
-    return 0.01, f"Wrong priority. Expected {correct}, got {guess}."
+    return _clamp(0.01), f"Wrong priority. Expected {correct}, got {guess}."
 
 
 def grade_task2(action, ticket):
@@ -52,12 +55,7 @@ def grade_task2(action, ticket):
     else:
         feedback_parts.append(f"Department wrong. Expected {correct_dept}, got {guess_dept}.")
 
-    if score <= 0.0:
-        score = 0.01
-    elif score >= 1.0:
-        score = 0.99
-
-    return round(score, 2), " ".join(feedback_parts)
+    return _clamp(round(score, 2)), " ".join(feedback_parts)
 
 
 def get_ideal_response(ticket):
@@ -97,8 +95,4 @@ def grade_task3(action, ticket):
         feedback += f" Semantic match score: {round(scaled_sim*100)}%."
 
     total = round(base_score + draft_score, 2)
-    if total <= 0.0:
-        total = 0.01
-    elif total >= 1.0:
-        total = 0.99
-    return total, feedback
+    return _clamp(total), feedback
