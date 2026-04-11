@@ -19,7 +19,10 @@ def get_api_base_url():
     return get_env_var("API_BASE_URL", "https://api.openai.com/v1")
 
 def get_model_name():
-    return get_env_var("MODEL_NAME", "gpt-3.5-turbo")
+    for k in ["MODEL_NAME", "MODEL", "OPENAI_MODEL_NAME", "LITELLM_MODEL", "LITELLM_MODEL_NAME"]:
+        if get_env_var(k):
+            return get_env_var(k)
+    return "gpt-3.5-turbo"
 
 def get_api_key():
     return get_env_var("API_KEY") or get_env_var("OPENAI_API_KEY") or get_env_var("HF_TOKEN")
@@ -176,9 +179,13 @@ def run_inference():
             try:
                 available_models = client.models.list()
                 if available_models.data:
-                    discovered_model = available_models.data[0].id
-                    os.environ["MODEL_NAME"] = discovered_model
-                    print(f"Dynamically discovered and bound model from LiteLLM proxy: {discovered_model}", flush=True)
+                    # Exclude wildcard '*' aliases returned by overly permissive LiteLLM topologies
+                    valid_models = [m.id for m in available_models.data if m.id and m.id != "*"]
+                    if valid_models:
+                        os.environ["MODEL_NAME"] = valid_models[0]
+                        print(f"Dynamically discovered and bound model from LiteLLM proxy: {valid_models[0]}", flush=True)
+                    else:
+                        print(f"Proxy only exposed wildcard alias. Depending gracefully on injected environment keys.", flush=True)
             except Exception as e:
                 print(f"Warning: Could not fetch models dynamically, preserving default {get_model_name()}: {e}", flush=True)
         except Exception as e:
