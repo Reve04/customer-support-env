@@ -23,15 +23,15 @@ class CustomerSupportEnv:
     def step(self, action: Action):
         if self.done:
             obs = self._make_observation()
-            reward = Reward(score=0.05, max_score=0.99, feedback="Episode already done. Call reset.")
+            reward = Reward(score=0.05, max_score=1.0, feedback="Episode already done. Call reset.")
             return obs, reward, self.done, {}
 
         self.step_count += 1
 
         score, feedback = self._grade(action)
         # Protect against strict [0, 1] range bounds by unconditionally clamping to (0, 1)
-        score = max(0.05, min(0.95, float(score)))
-        reward = Reward(score=score, max_score=0.99, feedback=feedback)
+        score = float(max(0.05, min(0.95, float(score))))
+        reward = Reward(score=score, max_score=1.0, feedback=feedback)
 
         if len(self.queue) == 0:
             self.done = True
@@ -68,4 +68,4 @@ class CustomerSupportEnv:
         elif self.task_name == "task3":
             return grade_task3(action, self.current_ticket)
         else:
-            return 0.01, "Unknown task."
+            return 0.05, "Unknown task."

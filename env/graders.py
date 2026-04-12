@@ -1,11 +1,13 @@
 def _clamp(score):
-    """Enforce strict open interval (0, 1). Also handles NaN/inf safely."""
+    """Enforce strict open interval (0, 1). Clamps to [0.05, 0.95] and handles NaN/inf safely."""
     try:
+        if score is None:
+            return 0.5
         v = float(score)
         # NaN check: NaN != NaN is always True
         if v != v or v == float('inf') or v == float('-inf'):
             return 0.5
-        return max(0.05, min(0.95, v))
+        return float(max(0.05, min(0.95, v)))
     except (ValueError, TypeError):
         return 0.5
 
@@ -15,7 +17,7 @@ def grade_task1(action, ticket):
     guess = action.priority.lower().strip()
 
     if guess == correct:
-        return _clamp(0.99), "Correct priority."
+        return _clamp(0.95), "Correct priority."
 
     priority_order = ["low", "medium", "high"]
     if correct in priority_order and guess in priority_order:
@@ -23,7 +25,7 @@ def grade_task1(action, ticket):
         if diff == 1:
             return _clamp(0.5), f"Off by one. Expected {correct}, got {guess}."
 
-    return _clamp(0.01), f"Wrong priority. Expected {correct}, got {guess}."
+    return _clamp(0.05), f"Wrong priority. Expected {correct}, got {guess}."
 
 
 def grade_task2(action, ticket):

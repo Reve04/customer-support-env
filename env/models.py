@@ -16,7 +16,7 @@ class Action(BaseModel):
 
 class Reward(BaseModel):
     score: float
-    max_score: float = 0.99  # Strict open interval - no 1.0 ever sent in response
+    max_score: float = 1.0  # Reference 1.0 ensures relative performance is never 100%
     feedback: str
 
     @field_validator("score", mode="before")
@@ -24,9 +24,11 @@ class Reward(BaseModel):
     def clamp_score(cls, v):
         """Unconditionally enforce strict open interval (0, 1)."""
         try:
+            if v is None:
+                return 0.5
             f = float(v)
             if f != f:  # NaN check
                 return 0.5
-            return max(0.05, min(0.95, f))
+            return float(max(0.05, min(0.95, f)))
         except (ValueError, TypeError):
             return 0.5

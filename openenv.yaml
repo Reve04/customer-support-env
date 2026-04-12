@@ -27,8 +27,8 @@ action_space:
   department: "one of: billing, technical, general (optional for task1)"
   draft_response: "string (required for task3)"
 reward:
-  min: 0.0
-  max: 1.0
+  min: 0.05
+  max: 0.95
   type: continuous
   partial_credit: true
 endpoints:

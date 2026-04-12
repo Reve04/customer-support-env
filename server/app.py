@@ -92,9 +92,9 @@ def baseline():
                         draft_response="Thank you for contacting us. We will review your account and resolve this issue as soon as possible."
                     )
                 _, reward, done, _ = env.step(action)
-                scores.append(reward.score)
+                scores.append(float(reward.score))
         avg = sum(scores) / len(scores)
-        results[task_name] = round(max(0.05, min(0.95, avg)), 2)
+        results[task_name] = float(max(0.05, min(0.95, round(avg, 3))))
     return results
 
 def main():
