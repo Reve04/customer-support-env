@@ -39,6 +39,6 @@ endpoints:
   grader: GET /grader
   baseline: GET /baseline
 baseline_scores:
-  task1: 0.99
-  task2: 0.99
+  task1: 0.95
+  task2: 0.95
   task3: 0.78

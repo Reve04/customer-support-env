@@ -5,7 +5,7 @@ def _clamp(score):
         # NaN check: NaN != NaN is always True
         if v != v or v == float('inf') or v == float('-inf'):
             return 0.5
-        return max(0.01, min(0.99, v))
+        return max(0.05, min(0.95, v))
     except (ValueError, TypeError):
         return 0.5
 

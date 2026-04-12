@@ -23,4 +23,10 @@ class Reward(BaseModel):
     @classmethod
     def clamp_score(cls, v):
         """Unconditionally enforce strict open interval (0, 1)."""
-        return max(0.01, min(0.99, float(v)))
+        try:
+            f = float(v)
+            if f != f:  # NaN check
+                return 0.5
+            return max(0.05, min(0.95, f))
+        except (ValueError, TypeError):
+            return 0.5
